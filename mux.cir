@@ -1,0 +1,54 @@
+* Multiplexer with Intentional Inverter Delay
+
+
+.include ./and2.inc
+.include ./or.inc
+.include ./inv.inc
+.include ./FreePDK45/ff.inc  * Include the correct model file
+
+* Power Supply
+VDD vdd gnd DC 1.8
+
+* Inputs
+* a = 1
+V1 a gnd DC 1.8 
+* b = 1       
+V2 b gnd DC 1.8       
+* s toggles from 0 to 1 
+V3 s gnd PULSE(0 1.8 0ns 1ns 1ns 10ns 20ns)  
+
+
+* Inverter with Delay
+XNOT gnd s not_s vdd NOT
+C_delay not_s gnd 500fF
+* Add capacitance to slow inverter
+
+* First AND gate: a * NOT(s)
+XAND1 gnd a not_s and1_out vdd AND2
+
+* Second AND gate: b * s
+XAND2 gnd b s and2_out vdd AND2
+
+* OR gate: Combine outputs
+XOR gnd and1_out and2_out mux_out vdd OR
+
+* Load Capacitance
+CL mux_out gnd 10fF
+
+* Simulation Command
+.tran 0.1ns 50ns
+
+.control
+  set color0=white      * Background color
+  set color1=black      * Text, axis, and grid color
+  set color2=blue        * First signal color
+  set color3=blue       * Second signal color
+  set color4=green      * Third signal color
+
+  run
+  plot v(s) 
+  plot v(mux_out)
+  
+.endc
+
+.end

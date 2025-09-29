@@ -1,0 +1,64 @@
+* c_logic.cir — Top-level simulation for C(x,y,w,z) with local delays on (w AND z) only
+
+.include ./c_logic.inc
+.include ./and2.inc
+.include ./or.inc
+.include ./inv.inc
+.include ./FreePDK45/ff.inc
+
+* Supply
+VDD vdd 0 DC 1.8
+
+* ---- Choose x,y levels ----
+* If you want OUT to equal K (for direct comparison), set both to 0 V:
+*Vx x 0 DC 0
+*Vy y 0 DC 0
+
+* If you want x=y=1 (as you asked later), use these:
+Vx x 0 DC 1.8
+Vy y 0 DC 1.8
+
+* Transitions: w goes 1->0, z goes 0->1 at 10 ns
+Vw w 0 PULSE(1.8 0   10ns 1ns 1ns 40ns 80ns)
+Vz z 0 PULSE(0   1.8 10ns 1ns 1ns 40ns 80ns)
+
+* ---- Delay knobs only for the (w AND z) path inside K ----
+.param CD_W=800f     ; slower W path (keeps w_del high a bit longer)
+.param CD_Z=50f      ; faster Z path (z_del rises sooner)
+
+* Instantiate the delayed logic (matches .subckt name in c_logic.inc)
+* ---- Delay knobs only for the (w AND z) path inside K ----
+.param CD_W=100f CD_Z=50f
+
+* Correct instantiation (NO 'params:' here):
+XC 0 x y w z out vdd clogicD CD_W={CD_W} CD_Z={CD_Z}
+
+
+* Output load
+CL out 0 10fF
+
+.tran 0.02ns 60ns
+
+.control
+  set color0=white
+  set color1=black
+  set color2=red
+  set color3=blue
+  set color4=green
+
+  save all
+  run
+
+  * Inputs
+  plot v(w) v(z)
+
+  * Internal delayed AND (w_del & z_del): expect 0→1→0 near 10 ns
+  *plot v(xc.k_wz)
+
+  * K versus OUT:
+  * - If x=y=0 above, v(out) should match v(xc.k).
+  * - If x=y=1, OUT ≈ (w OR z'), so OUT will not track K.
+  plot v(xc.k) v(out)
+.endc
+
+.end

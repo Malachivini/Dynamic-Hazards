@@ -1,0 +1,30 @@
+* AND2 Test Circuit
+
+.include ./and2.inc
+.include ./nand2.inc
+.include ./inv.inc
+.include ./FreePDK45/ff.inc
+
+
+* Power Supply
+VDD vdd gnd DC 1.8
+
+* Inputs
+V1 i1 gnd PULSE(0 1.8 0ns 10ns 10ns 40ns 80ns)
+V2 i2 gnd PULSE(0 1.8 20ns 10ns 10ns 40ns 80ns)
+
+* AND Gate
+XAND gnd i1 i2 out vdd AND2
+
+* Output Load
+CL out gnd 10fF
+
+* Simulation Command
+.tran 0.1ns 100ns
+
+.control
+  run
+  plot v(i1) v(i2) v(out)
+.endc
+
+.end

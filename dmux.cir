@@ -1,0 +1,39 @@
+* custom_logic.cir - Top-level simulation for: ((a + s) * b) + (not(s) * a)
+
+.include ./dmux.inc
+.include ./and2.inc
+.include ./or.inc
+.include ./inv.inc
+.include ./FreePDK45/ff.inc
+
+Vdd vdd 0 DC 1.8
+
+* Input signals
+* Input signals
+Vs s 0 DC 0          ; s fixed at 0
+
+Va a 0 PULSE(0 1.8 0ns 1ns 1ns 20ns 40ns)   ; a: rising pulse
+Vb b 0 PULSE(1.8 0 3ns 1ns 1ns 20ns 40ns)   ; b: falling pulse
+
+
+* Instantiate the logic
+Xlogic 0 a b s out vdd custom_logic
+
+* Output load
+Cout out 0 10fF
+
+.tran 0.1ns 50ns
+
+.control
+  set color0=white      * Background color
+  set color1=black      * Text, axis, and grid color
+  set color2=blue        * First signal color
+  set color4=green      * Third signal color
+  run
+  plot v(out)
+  plot v(a) v(b) v(s)
+.endc
+
+
+
+.end

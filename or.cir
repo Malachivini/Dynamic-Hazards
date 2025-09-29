@@ -1,0 +1,49 @@
+* OR Gate Simulation
+
+.include ./or.inc
+.include ./FreePDK45/ff.inc  * Include the correct model file
+
+* Power Supply
+VDD vdd gnd DC 1.8
+
+* Inputs
+V1 i1 gnd PULSE(0 1.8 0ns 1ns 1ns 10ns 20ns)
+V2 i2 gnd PULSE(0 1.8 5ns 1ns 1ns 10ns 20ns)
+
+* OR Gate
+XOR gnd i1 i2 o vdd OR
+
+* Output Load
+CL o gnd 50fF
+
+* Simulation Command
+.tran 0.1ns 200ns
+
+.control
+  run
+
+set color0=white  * Background
+  set color1=black  * Text
+  set color2=red    * First signal color
+  set color3=blue   * Second signal color
+  set color4=green  * Third signal color
+  * Enable multiplot mode
+  set multiplot
+
+  * First plot: Inputs
+  window 1
+  title "Inputs"
+  xlabel "Time (ns)"
+  ylabel "Voltage (V)"
+  plot v(i1) v(i2)
+
+  * Second plot: Output
+  window 1
+  title "Output"
+  xlabel "Time (ns)"
+  ylabel "Voltage (V)"
+  plot v(o)
+
+  * End multiplot mode
+  unset multiplot
+.endc
